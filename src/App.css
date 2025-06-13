@@ -1,38 +1,360 @@
-.App {
-  text-align: center;
+/* App.css */
+
+:root {
+    --primary-purple: #6a1b9a; /* Darker purple for main elements */
+    --light-purple: #9c27b0; /* Lighter purple for accents */
+    --background-purple-light: #f3e5f5; /* Very light purple for background */
+    --text-dark: #333;
+    --text-light: #fff;
+    --border-light: #e0e0e0;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --success-green: #4CAF50;
+    --error-red: #f44336;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--background-purple-light); /* Light purple background */
+    color: var(--text-dark);
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align content to the top */
+    min-height: 100vh; /* Ensure full viewport height */
+    padding: 20px; /* Add some padding around the main content */
+    box-sizing: border-box;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.app-background {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.main-content {
+    background-color: var(--text-light); /* White background for the card */
+    border-radius: 12px;
+    box-shadow: 0 4px 20px var(--shadow-light);
+    padding: 30px;
+    max-width: 700px; /* Max width for the main content card */
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 50px; /* Space from the top */
+    margin-bottom: 50px; /* Space from the bottom */
 }
 
-.App-link {
-  color: #61dafb;
+/* Card Styling */
+.card {
+    padding: 25px;
+    border-radius: 10px;
+    background-color: var(--text-light);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.card-title {
+    color: var(--primary-purple);
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--border-light);
+    margin: 20px 0;
+}
+
+/* Icons */
+.icon-large {
+    width: 60px;
+    height: 60px;
+    color: var(--primary-purple);
+    margin-bottom: 20px;
+}
+
+.icon-small {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.success-icon {
+    color: var(--success-green);
+}
+
+/* Buttons */
+.button {
+    background-color: var(--primary-purple);
+    color: var(--text-light);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and text */
+}
+
+.button:hover:not(:disabled) {
+    background-color: var(--light-purple);
+    transform: translateY(-2px);
+}
+
+.button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.button-secondary {
+    background-color: #e0e0e0;
+    color: var(--text-dark);
+}
+
+.button-secondary:hover:not(:disabled) {
+    background-color: #c9c9c9;
+}
+
+/* Grade Selector Grid */
+.grade-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
+}
+
+/* Textarea and Input fields */
+.textarea-field, .input-field, .user-answer-input, .fill-in-blank-input {
+    width: calc(100% - 24px); /* Account for padding */
+    padding: 12px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box; /* Include padding in width */
+    resize: vertical; /* Allow vertical resizing for textareas */
+}
+
+.label {
+    display: block;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    color: var(--primary-purple);
+}
+
+/* Navigation Buttons Group */
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+.navigation-buttons .button {
+    flex-grow: 1; /* Allow buttons to grow and fill space */
+    min-width: 150px; /* Minimum width for buttons */
+}
+
+/* Specific to Question/Scenario/Result View */
+.question-view .question-area, .result-box {
+    background-color: #f9f9f9;
+    border: 1px solid var(--border-light);
+    border-left: 5px solid var(--light-purple); /* Accent border */
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.question-text {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    height: 35px; /* Taller to accommodate text and steps */
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden; /* Ensure fill stays within bounds */
+    display: flex; /* Use flexbox for internal alignment */
+    flex-direction: column; /* Stack fill and steps */
+    justify-content: space-between;
+    padding-bottom: 5px; /* Space for step labels below */
+}
+
+.progress-bar-track {
+    height: 10px; /* Height of the actual fill bar */
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    position: relative;
+    width: 100%;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--light-purple);
+    border-radius: 5px;
+    transition: width 0.4s ease-in-out;
+}
+
+.progress-bar-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: absolute; /* Position over the bar */
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    align-items: center;
+}
+
+.progress-bar-step {
+    flex: 1;
+    text-align: center;
+    font-size: 0.8em;
+    color: #777;
+    font-weight: bold;
+    position: relative;
+    /* Removed the ::after pseudo-element that was creating the dots */
+}
+
+/* Removed the ::after rules for .completed and .active that were adding dots */
+.progress-bar-step.active {
+    color: var(--primary-purple);
+}
+
+.progress-bar-step.completed {
+    color: #4CAF50; /* Green for completed steps */
+}
+
+
+/* Summary Page Styling */
+.summary-step {
+    background-color: var(--text-light);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.response-list {
+    margin-top: 25px;
+}
+
+.response-item {
+    background-color: #fdfdfd;
+    border: 1px solid var(--border-light);
+    border-left: 5px solid var(--primary-purple);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.response-item strong {
+    color: var(--primary-purple);
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+}
+
+.user-answer-summary {
+    margin-top: 5px;
+    margin-left: 28px; /* Indent to align with question text */
+    color: #555;
+    font-style: italic;
+}
+
+/* Centering for some elements */
+.text-center {
+    text-align: center;
+}
+
+/* Fill-in-the-blank specific styles */
+.fill-in-blank-container {
+    margin: 15px 0;
+    padding: 10px;
+    border: 1px dashed var(--border-light);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Allow parts to wrap */
+}
+
+.fill-in-blank-input {
+    display: inline-block;
+    width: 150px; /* Fixed width for the input field */
+    margin: 0 5px;
+    vertical-align: middle;
+    text-align: center;
+    font-weight: bold;
+    color: var(--primary-purple);
+    border: 1px solid var(--primary-purple); /* Add a border to the input */
+}
+
+.user-fill-in-answer {
+    display: inline-block;
+    padding: 2px 5px;
+    margin: 0 5px;
+    vertical-align: middle;
+    text-align: center;
+    font-weight: bold;
+    color: var(--primary-purple);
+    background-color: var(--background-purple-light);
+    border-radius: 4px;
+}
+
+.fill-blank-label {
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+.user-prediction-display {
+    background-color: #f0f0f0;
+    border-left: 3px solid #777;
+    padding: 10px 15px;
+    margin-top: 15px;
+    border-radius: 5px;
+    font-style: italic;
+}
+.user-prediction-display strong {
+    color: #555;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
 }
