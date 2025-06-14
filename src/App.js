@@ -1,81 +1,154 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, RefreshCw, School, BookOpen, FlaskConical, Beaker, TestTube2, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react'; // Fixed: Changed '=>' to 'from'
+import { ChevronRight, ChevronLeft, RefreshCw, School, BookOpen, FlaskConical, Beaker, TestTube2, CheckCircle, Lightbulb, TrendingUp, ScatterChart } from 'lucide-react';
 import './App.css'; // Make sure this is linked for the theme
 
 // --- HARDCODED EXPERIMENT DATA ---
 // Each experiment has a title, scenario, result, and grade level(s) it applies to.
-// Grades 1-4 might have a 'fillBlank' for a simple answer.
-// 'question_prompt' is a specific hardcoded question for the DynamicQuestionStep for grades 1-4.
+// Grades 1-4 now use 'observation_prompts' for guided reasoning.
+// Grades 5-8 have more complex scenarios and results.
 const experiments = [
-    // Grade 1: Basic Observation / Simple Prediction
+    // Grade 1: Basic Observation / Simple Prediction (Enhanced with multi-stage observation)
     {
         id: 1,
         title: "Melting Ice Cube",
-        scenario: "You place a solid ice cube on a plate and leave it in a warm, sunny spot.",
-        question_prompt: "What do you think will happen to the ice cube?", // Specific prompt for G1-4
-        result: "The solid ice cube slowly turns into a puddle of liquid water because the sun's heat melts it.",
+        scenario: "You place a solid ice cube on a plate and leave it in a warm, sunny spot. Observe it over some time.",
+        observation_prompts: [ // New structure for G1-4 detailed observation
+            {
+                prompt: "What does the ice cube look like right now? Describe its shape and how it feels (if you could touch it).",
+                key: "initial_observation"
+            },
+            {
+                prompt: "After a little while, what changes do you start to notice around and on the ice cube?",
+                key: "mid_observation"
+            },
+            {
+                prompt: "After a much longer time, what is left on the plate? Where did the ice cube go?",
+                key: "final_observation"
+            },
+            {
+                prompt: "What do you think caused the ice cube to change from a solid block to what's on the plate now?",
+                key: "reasoning_cause"
+            }
+        ],
+        result: "The solid ice cube slowly turns into a puddle of liquid water because the sun's heat melts it. This process is called melting, where a solid changes into a liquid due to an increase in temperature.",
         gradeLevels: [1],
-        fillBlank: "The ice cube turned into liquid ___."
+        fillBlank: "The solid ice cube turned into liquid ___."
     },
-    // Grade 2: Properties of Materials / Observation
+    // Grade 2: Properties of Materials / Observation (Enhanced with multi-stage observation)
     {
         id: 2,
         title: "Float or Sink?",
-        scenario: "You take a small plastic toy and a small stone and gently place them both in a bowl full of water.",
-        question_prompt: "What do you observe? Will both objects sink?", // Specific prompt for G1-4
-        result: "The light plastic toy floats on the surface, while the heavy stone sinks to the bottom.",
+        scenario: "You have a small plastic toy and a small stone. You will gently place each one into a bowl full of water.",
+        observation_prompts: [
+            {
+                prompt: "Before putting them in water, how do the plastic toy and the stone feel? Are they light or heavy for their size?",
+                key: "initial_comparison"
+            },
+            {
+                prompt: "First, gently place the plastic toy in the water. What happens?",
+                key: "toy_observation"
+            },
+            {
+                prompt: "Next, gently place the stone in the water. What happens?",
+                key: "stone_observation"
+            },
+            {
+                prompt: "Why do you think one floated and the other sank?",
+                key: "reasoning_prediction"
+            }
+        ],
+        result: "The light plastic toy floats on the surface, while the heavy stone sinks to the bottom. This happens because of their density compared to water. Objects less dense than water float, and objects more dense than water sink.",
         gradeLevels: [2],
-        fillBlank: "The heavy stone ___ to the bottom."
+        fillBlank: "The object that sank was the ___."
     },
-    // Grade 3: Magnetism / Simple Interaction
+    // Grade 3: Magnetism / Simple Interaction (Enhanced with multi-stage observation)
     {
         id: 3,
         title: "Magic Magnets",
-        scenario: "You have a magnet. You try to touch it to three different items: a metal paperclip, a wooden block, and a plastic coin.",
-        question_prompt: "What do you think the magnet will stick to?", // Specific prompt for G1-4
-        result: "The magnet attracts and picks up the metal paperclip, but it does not attract the wooden block or the plastic coin.",
+        scenario: "You have a magnet and three different items: a metal paperclip, a wooden block, and a plastic coin. You will try to touch the magnet to each item.",
+        observation_prompts: [
+            {
+                prompt: "What do you already know about magnets? What kind of things do they usually stick to?",
+                key: "prior_knowledge"
+            },
+            {
+                prompt: "First, touch the magnet to the metal paperclip. What happens?",
+                key: "paperclip_observation"
+            },
+            {
+                prompt: "Next, touch the magnet to the wooden block. What happens?",
+                key: "wood_observation"
+            },
+            {
+                prompt: "Finally, touch the magnet to the plastic coin. What happens?",
+                key: "plastic_observation"
+            },
+            {
+                prompt: "Based on what you saw, what kind of materials do magnets stick to?",
+                key: "reasoning_conclusion"
+            }
+        ],
+        result: "The magnet attracts and picks up the metal paperclip, but it does not attract the wooden block or the plastic coin. Magnets are only attracted to certain metals, like iron, nickel, and cobalt.",
         gradeLevels: [3],
+        fillBlank: "The magnet stuck to the ___."
     },
-    // Grade 4: Simple Chemical Reactions / Change
+    // Grade 4: Simple Chemical Reactions / Change (Enhanced with multi-stage observation)
     {
         id: 4,
         title: "Baking Soda Volcano",
-        scenario: "You mix baking soda and vinegar together in a small bottle. There's a lot of fizzing and bubbling!",
-        question_prompt: "What do you think will happen when you mix baking soda and vinegar?", // Specific prompt for G1-4
-        result: "The baking soda and vinegar react to produce carbon dioxide gas, which causes the fizzing and bubbling, like a small volcano.",
+        scenario: "You are preparing to mix baking soda and vinegar together in a small bottle. Watch closely as they combine!",
+        observation_prompts: [
+            {
+                prompt: "What does baking soda look like? How about vinegar? Describe each before mixing.",
+                key: "initial_appearance"
+            },
+            {
+                prompt: "When you start mixing them, what is the first thing you notice happening?",
+                key: "immediate_reaction"
+            },
+            {
+                prompt: "As they continue mixing, what kind of sounds or visuals do you observe? (e.g., fizzing, bubbling, foaming)",
+                key: "ongoing_reaction"
+            },
+            {
+                prompt: "Where do you think all the bubbles came from? What do you think they are?",
+                key: "reasoning_gas"
+            }
+        ],
+        result: "The baking soda (a base) and vinegar (an acid) react chemically to produce carbon dioxide gas, which causes the rapid fizzing and bubbling, making it look like a small volcano. This is an example of a chemical change, where new substances are formed.",
         gradeLevels: [4],
         fillBlank: "The mixing of baking soda and vinegar made a lot of ___."
     },
-    // Grade 5: Plant Growth / Basic Biology (Hypothesis, Simple Variables, Prediction, Result)
+    // Grade 5: Plant Growth / Basic Biology (More detailed prediction and result)
     {
         id: 5,
-        title: "Planting a Seed",
-        scenario: "You plant a small bean seed in a pot with soil and water it regularly. You place the pot near a sunny window.",
-        result: "After a few days, a small green sprout emerges from the soil and begins to grow towards the light.",
+        title: "The Mystery of Plant Growth",
+        scenario: "You have three identical small bean seeds and three identical pots with soil. You want to see how different conditions affect their growth. \n\nPot A is watered daily and placed near a sunny window. \nPot B is watered daily but placed in a dark closet. \nPot C is placed near a sunny window but is *not* watered.\n\nAfter two weeks, you observe the growth in each pot. What do you expect to see, and why?",
+        result: "Pot A, with light and water, will show healthy growth. Pot B, lacking light, will likely sprout but be pale and spindly (etiolated) as it tries to reach for light, and eventually die. Pot C, lacking water, will not germinate or grow at all. This demonstrates that plants require specific environmental factors—including sufficient light and water—for photosynthesis and overall survival. Different conditions act as limiting factors, preventing optimal growth.",
         gradeLevels: [5],
     },
-    // Grade 6: States of Matter / Energy Transfer (Hypothesis, Simple Variables, Prediction, Result)
+    // Grade 6: States of Matter / Energy Transfer (Deeper explanation of evaporation)
     {
         id: 6,
-        title: "Evaporating Puddle",
-        scenario: "A puddle of water is left on the sidewalk on a hot, sunny day. After a few hours, the puddle is gone.",
-        result: "The liquid water in the puddle absorbed energy from the sun and turned into water vapor, which is a gas that mixes with the air.",
+        title: "Evaporation Race!",
+        scenario: "You spill the same amount of water (e.g., 50ml) onto three different surfaces: \n\nSurface 1: A small, shallow saucer. \nSurface 2: A wide, flat tray. \nSurface 3: The same wide, flat tray, but you aim a small fan at it. \n\nAll surfaces are left in the same room conditions. Predict which puddle will dry fastest and slowest, and explain your reasoning. What factors do you think are most important here?",
+        result: "The puddle on Surface 3 (wide tray with a fan) will evaporate fastest because it has both a large surface area and increased air movement (wind), which carries away water vapor molecules more quickly. Surface 2 (wide tray) will evaporate faster than Surface 1 (small saucer) because of its larger surface area exposed to the air. This experiment highlights how surface area and air circulation significantly influence the rate of evaporation, by affecting how quickly water molecules can escape into the atmosphere.",
         gradeLevels: [6],
     },
-    // Grade 7: Simple Machines / Physics (Full Scientific Method)
+    // Grade 7: Simple Machines / Physics (Focus on force, distance, and work)
     {
         id: 7,
-        title: "Leverage with a Ruler",
-        scenario: "You use a long ruler to try and lift a heavy book. You put a small block (fulcrum) under the ruler and press down on one end.",
-        result: "By pressing down on the long end of the ruler, the heavy book on the other end is lifted with less effort due to the principle of leverage.",
+        title: "The Balancing Act: Ruler Lever Challenge",
+        scenario: "You have a 30cm ruler, a small eraser, and a heavy textbook. Your goal is to balance the textbook using the eraser as a fulcrum and pressing down with one finger on the ruler. \n\nTask 1: Place the eraser exactly in the middle (15cm mark). Can you lift the book easily? \nTask 2: Move the eraser closer to the book (e.g., 5cm from the book's edge). Where do you now need to press on the ruler to lift the book, and how much effort does it feel like you're using compared to Task 1? \nTask 3: If you move the eraser even closer to the book (e.g., 2cm from the book's edge), what changes about the effort and the distance your finger moves?",
+        result: "When the fulcrum is in the middle (Task 1), it's harder to lift a heavy book with a light finger press, requiring more force but a smaller movement. When the fulcrum is closer to the book (Task 2 & 3), it acts as a force multiplier. You'll exert less force, but your finger will have to move a greater distance. This demonstrates the inverse relationship between force and distance in a lever system (principle of moments). The further the effort is from the ful fulcrum (the effort arm), the less force is needed to lift a heavier load on the load arm, but the greater the distance the effort arm must travel. This shows how levers can trade force for distance.",
         gradeLevels: [7],
     },
-    // Grade 8: Basic Electricity / Physics (Full Scientific Method)
+    // Grade 8: Basic Electricity / Physics (Quantitative thinking, circuit types hinted)
     {
         id: 8,
-        title: "Simple Circuit",
-        scenario: "You connect a battery, a light bulb, and wires together in a closed loop.",
-        result: "The light bulb lights up because electricity flows from the battery, through the wires, and through the bulb in a complete circuit.",
+        title: "Illuminating the House: Circuit Design Challenge",
+        scenario: "Imagine you're designing a simple lighting circuit for a small dollhouse with two identical light bulbs. You have a single battery (power source) and connecting wires.\n\nChallenge 1: Design a circuit so that if one bulb breaks, the other *also* goes out. Draw or describe how you'd connect them, and explain why this happens.\nChallenge 2: Now, design a circuit so that if one bulb breaks, the other *stays lit*. Draw or describe how you'd connect them, and explain the difference. \n\nConsider how the brightness of the bulbs might differ in each challenge.",
+        result: "Challenge 1 describes a **series circuit**: the bulbs are connected one after another, forming a single path for the current. If one bulb breaks (creating an open circuit), the entire path is broken, and current stops flowing to both. The bulbs in a series circuit also share the voltage, so they might be dimmer. Challenge 2 describes a **parallel circuit**: each bulb is connected directly to the battery, creating independent paths for the current. If one bulb breaks, current can still flow through the other path, keeping the second bulb lit. Bulbs in a parallel circuit typically receive the full voltage from the source and thus appear brighter. This demonstrates fundamental differences between series and parallel circuits concerning current path, component independence, and voltage distribution.",
         gradeLevels: [8],
     }
 ];
@@ -112,7 +185,7 @@ const ProgressBar = ({ currentStep, totalSteps, grade }) => {
     let displaySteps = [];
 
     // Define step labels based on grade range
-    if (grade >=1 && grade <= 4) displaySteps = ["Scenario", "Question", "Result"];
+    if (grade >=1 && grade <= 4) displaySteps = ["Scenario", "Observe/Predict", "Result"]; // Updated for G1-4
     else if (grade >= 5 && grade <= 6) displaySteps = ["Scenario", "Hypothesis", "Variables", "Prediction", "Result"];
     else if (grade >= 7 && grade <= 8) displaySteps = ["Scenario", "Hypothesis", "Variables", "Prediction", "Analysis", "Conclusion"];
     else displaySteps = ["Start"]; // Fallback
@@ -166,7 +239,7 @@ const StepHeader = ({ icon, text }) => (
 const ScenarioStep = ({ experiment, onNext, onBack }) => (
     <div>
         <StepHeader icon={<BookOpen />} text="Scenario" />
-        <p className="paragraph">{experiment.scenario}</p>
+        <p className="paragraph scenario-text">{experiment.scenario}</p> {/* Added class for potential styling */}
         <div className="button-group">
             <Button onClick={onBack} className="button-secondary">
                 <ChevronLeft /> Change Grade
@@ -178,64 +251,98 @@ const ScenarioStep = ({ experiment, onNext, onBack }) => (
     </div>
 );
 
-// This component is now fully hardcoded and does NOT use Gemini.
-const DynamicQuestionStep = ({ onNext, onBack, experiment }) => {
-    const [userAnswer, setUserAnswer] = useState('');
+// New component for Grade 1-4 observations and predictions
+const ObservationAndPredictionStep = ({ onNext, onBack, experiment, responses, setResponses }) => { // Added setResponses prop
+    const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+    const [userAnswer, setUserAnswer] = useState(responses[experiment.observation_prompts[currentPromptIndex]?.key] || '');
 
-    // The question is now directly from the experiment object
-    const questionText = experiment.question_prompt || "What do you think will happen?";
+    // Update userAnswer when prompt index or responses change (e.g., navigating back)
+    useEffect(() => {
+        if (experiment.observation_prompts[currentPromptIndex]) {
+            setUserAnswer(responses[experiment.observation_prompts[currentPromptIndex].key] || '');
+        }
+    }, [currentPromptIndex, experiment.observation_prompts, responses]);
 
-    const handleSubmit = () => {
-        if (userAnswer.trim()) {
-            // Pass the user's answer for the prediction/observation
-            onNext({ question: questionText, prediction_or_observation: userAnswer });
+    const currentPrompt = experiment.observation_prompts[currentPromptIndex];
+    if (!currentPrompt) return null; // Should not happen if data is structured correctly
+
+    const handleNextPrompt = () => {
+        if (!userAnswer.trim()) {
+            // Using a simple alert, as per general instructions, for quick feedback
+            // For production, consider a custom modal.
+            alert("Please provide an answer before moving on.");
+            return;
+        }
+
+        const newResponses = { ...responses, [currentPrompt.key]: userAnswer.trim() };
+        setResponses(newResponses); // Update responses in parent state via setResponses directly
+
+        if (currentPromptIndex < experiment.observation_prompts.length - 1) {
+            setCurrentPromptIndex(currentPromptIndex + 1);
         } else {
-            alert("Please provide an answer before submitting.");
+            // All prompts answered, move to the next main step
+            onNext(newResponses);
+        }
+    };
+
+    const handleBackPrompt = () => {
+        if (currentPromptIndex > 0) {
+            setCurrentPromptIndex(currentPromptIndex - 1);
+        } else {
+            // If on the first prompt, go back to the previous main step
+            onBack();
         }
     };
 
     return (
         <div>
-            <StepHeader icon={<FlaskConical />} text="Prediction / Observation" />
-            <p className="paragraph question-text">{questionText}</p>
+            <StepHeader icon={<Lightbulb />} text="Observe and Predict" />
+            <p className="paragraph question-text">{currentPrompt.prompt}</p>
             <textarea
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 className="textarea-field"
-                placeholder="Type your answer here..."
+                placeholder="Type your observations or thoughts here..."
                 rows="5"
             />
             <div className="button-group">
-                <Button onClick={onBack} className="button-secondary">
-                    <ChevronLeft /> Previous
+                <Button onClick={handleBackPrompt} className="button-secondary">
+                    <ChevronLeft /> {currentPromptIndex === 0 ? "Previous Step" : "Previous Prompt"}
                 </Button>
-                <Button onClick={handleSubmit} disabled={!userAnswer.trim()}>
-                    Next <ChevronRight />
+                <Button onClick={handleNextPrompt} disabled={!userAnswer.trim()}>
+                    {currentPromptIndex < experiment.observation_prompts.length - 1 ? "Next Prompt" : "See Results"} <ChevronRight />
                 </Button>
             </div>
         </div>
     );
 };
 
-const HypothesisStep = ({ onNext, onBack }) => {
-    const [hypothesis, setHypothesis] = useState('');
+
+const HypothesisStep = ({ onNext, onBack, responses, setResponses }) => {
+    const [hypothesis, setHypothesis] = useState(responses?.hypothesis || ''); // Pre-fill from responses
+
+    const handleNextStep = () => {
+        setResponses(prev => ({ ...prev, hypothesis })); // Update parent responses
+        onNext({ hypothesis });
+    };
+
     return (
         <div>
             <StepHeader icon={<FlaskConical />} text="Write Your Hypothesis" />
-            <p className="paragraph">A hypothesis is your best guess about what will happen. Use an "If..., then..." statement.</p>
+            <p className="paragraph">A hypothesis is your best guess about what will happen, based on what you already know. It should be a testable statement, often in an "If..., then..., because..." format.</p>
             <textarea
                 id="hypothesis"
                 value={hypothesis}
                 onChange={(e) => setHypothesis(e.target.value)}
                 className="textarea-field"
                 rows="4"
-                placeholder="If I [do this], then [this] will happen."
+                placeholder="If I [do this independent variable change], then [this dependent variable outcome] will happen, because [reasoning]."
             />
             <div className="button-group">
                 <Button onClick={onBack} className="button-secondary">
                     <ChevronLeft /> Previous
                 </Button>
-                <Button onClick={() => onNext({ hypothesis })} disabled={!hypothesis}>
+                <Button onClick={handleNextStep} disabled={!hypothesis}>
                     Next: Identify Variables <ChevronRight />
                 </Button>
             </div>
@@ -243,25 +350,40 @@ const HypothesisStep = ({ onNext, onBack }) => {
     );
 };
 
-const VariablesStep = ({ onNext, onBack, grade }) => {
-    const [iv, setIv] = useState('');
-    const [dv, setDv] = useState('');
-    const [cv, setCv] = useState('');
+const VariablesStep = ({ onNext, onBack, grade, responses, setResponses }) => {
+    const [iv, setIv] = useState(responses?.independent_variable || '');
+    const [dv, setDv] = useState(responses?.dependent_variable || '');
+    const [cv, setCv] = useState(responses?.controlled_variables || '');
+
+    const handleNextStep = () => {
+        setResponses(prev => ({ ...prev, independent_variable: iv, dependent_variable: dv, controlled_variables: cv }));
+        onNext({ independent_variable: iv, dependent_variable: dv, controlled_variables: cv });
+    };
 
     return (
         <div>
             <StepHeader icon={<Beaker />} text="Identify the Variables" />
+            <p className="paragraph">Understanding variables helps ensure your experiment is fair and accurate.</p>
             <div className="variables-container">
                 <div className="variable-item">
-                    <label className="label" htmlFor="iv">{grade >= 7 ? "Independent Variable (What I change)" : "What are you changing?"}</label>
+                    <label className="label" htmlFor="iv">
+                        {grade >= 7 ? "Independent Variable (What I change)" : "What are you changing on purpose?"}
+                        <p className="hint-text">The one thing you control or alter in the experiment.</p>
+                    </label>
                     <input id="iv" type="text" value={iv} onChange={(e) => setIv(e.target.value)} className="input-field" />
                 </div>
                 <div className="variable-item">
-                    <label className="label" htmlFor="dv">{grade >= 7 ? "Dependent Variable (What I observe or measure)" : "What are you measuring?"}</label>
+                    <label className="label" htmlFor="dv">
+                        {grade >= 7 ? "Dependent Variable (What I observe or measure)" : "What are you measuring or observing as a result?"}
+                        <p className="hint-text">The thing that changes in response to your independent variable.</p>
+                    </label>
                     <input id="dv" type="text" value={dv} onChange={(e) => setDv(e.target.value)} className="input-field" />
                 </div>
                 <div className="variable-item">
-                    <label className="label" htmlFor="cv">{grade >= 7 ? "Controlled Variables (What I keep the same)" : "What should stay the same?"}</label>
+                    <label className="label" htmlFor="cv">
+                        {grade >= 7 ? "Controlled Variables (What I keep the same)" : "What should stay the same to make it a fair test?"}
+                        <p className="hint-text">Everything else you keep consistent so only the independent variable's effect is seen.</p>
+                    </label>
                     <input id="cv" type="text" value={cv} onChange={(e) => setCv(e.target.value)} className="input-field" />
                 </div>
             </div>
@@ -269,7 +391,7 @@ const VariablesStep = ({ onNext, onBack, grade }) => {
                 <Button onClick={onBack} className="button-secondary">
                     <ChevronLeft /> Previous
                 </Button>
-                <Button onClick={() => onNext({ independent_variable: iv, dependent_variable: dv, controlled_variables: cv })} disabled={!iv || !dv}>
+                <Button onClick={handleNextStep} disabled={!iv || !dv}>
                     Next: Make a Prediction <ChevronRight />
                 </Button>
             </div>
@@ -277,12 +399,18 @@ const VariablesStep = ({ onNext, onBack, grade }) => {
     );
 };
 
-const PredictionStep = ({ onNext, onBack }) => {
-    const [prediction, setPrediction] = useState('');
+const PredictionStep = ({ onNext, onBack, responses, setResponses }) => {
+    const [prediction, setPrediction] = useState(responses?.prediction || '');
+
+    const handleNextStep = () => {
+        setResponses(prev => ({ ...prev, prediction }));
+        onNext({ prediction });
+    };
+
     return (
         <div>
             <StepHeader icon={<TestTube2 />} text="Predict the Outcome" />
-            <p className="paragraph">Based on your hypothesis, what specific result do you expect to see?</p>
+            <p className="paragraph">Based on your hypothesis and understanding of the variables, what specific result do you expect to see? Be as detailed as possible!</p>
             <textarea
                 value={prediction}
                 onChange={(e) => setPrediction(e.target.value)}
@@ -294,7 +422,7 @@ const PredictionStep = ({ onNext, onBack }) => {
                 <Button onClick={onBack} className="button-secondary">
                     <ChevronLeft /> Previous
                 </Button>
-                <Button onClick={() => onNext({ prediction })} disabled={!prediction}>
+                <Button onClick={handleNextStep} disabled={!prediction}>
                     See the Results <ChevronRight />
                 </Button>
             </div>
@@ -303,7 +431,7 @@ const PredictionStep = ({ onNext, onBack }) => {
 };
 
 // ResultStep now displays the user's previous answer for fill-in-the-blank
-const ResultStep = ({ onNext, onBack, experiment, grade, responses }) => {
+const ResultStep = ({ onNext, onBack, experiment, grade, responses, setResponses }) => {
     const [fillInAnswer, setFillInAnswer] = useState(responses?.fillBlankAnswer || ''); // Pre-fill if coming back
 
     // Determine if this is a grade 1-4 experiment with a fill-in-the-blank
@@ -315,6 +443,7 @@ const ResultStep = ({ onNext, onBack, experiment, grade, responses }) => {
             alert("Please fill in the blank before submitting.");
             return;
         }
+        setResponses(prev => ({ ...prev, fillBlankAnswer: fillInAnswer.trim() }));
         // Pass the answer for fill-in-the-blank, or an empty string if not applicable
         onNext({ fillBlankAnswer: fillInAnswer.trim() });
     };
@@ -355,22 +484,37 @@ const ResultStep = ({ onNext, onBack, experiment, grade, responses }) => {
                     <div className="fill-in-blank-container">
                         {getFillBlankPrompt(experiment.fillBlank)}
                     </div>
-                    {/* Display user's initial prediction/observation for G1-4 if it exists */}
-                    {responses.prediction_or_observation && (
-                        <div className="user-prediction-display">
-                            <strong>Your Prediction/Observation:</strong>
-                            <p>{responses.prediction_or_observation}</p>
-                        </div>
-                    )}
                 </>
             )}
+
+            {/* Display all G1-4 observations if they exist */}
+            {(grade >= 1 && grade <= 4 && experiment.observation_prompts) && (
+                <div className="user-prediction-display">
+                    <strong>Your Observations & Reasoning:</strong>
+                    {experiment.observation_prompts.map(p => responses[p.key] && (
+                        <p key={p.key} className="user-response-item">
+                            <span className="question-prompt-small">{p.prompt}</span><br />
+                            <em>{responses[p.key]}</em>
+                        </p>
+                    ))}
+                </div>
+            )}
+
+            {/* Display user's initial prediction for G5-8 if it exists */}
+            {(grade >= 5 && grade <= 8 && responses.prediction) && (
+                <div className="user-prediction-display">
+                    <strong>Your Prediction:</strong>
+                    <p>{responses.prediction}</p>
+                </div>
+            )}
+
 
             <div className="button-group">
                 <Button onClick={onBack} className="button-secondary">
                     <ChevronLeft /> Previous
                 </Button>
                 <Button onClick={handleSubmit} disabled={isGrade1To4AndHasFillBlank && !fillInAnswer.trim() && !responses.fillBlankAnswer}>
-                    {grade >= 7 || (grade >= 5 && grade <= 6) ? "Next: Analyze Results" : "Finish Experiment"} <ChevronRight />
+                    {grade >= 5 ? "Next: Analyze Results" : "Finish Experiment"} <ChevronRight />
                 </Button>
             </div>
         </div>
@@ -378,24 +522,30 @@ const ResultStep = ({ onNext, onBack, experiment, grade, responses }) => {
 };
 
 
-const AnalysisStep = ({ onNext, onBack }) => {
-    const [analysis, setAnalysis] = useState('');
+const AnalysisStep = ({ onNext, onBack, responses, setResponses }) => {
+    const [analysis, setAnalysis] = useState(responses?.analysis || '');
+
+    const handleNextStep = () => {
+        setResponses(prev => ({ ...prev, analysis }));
+        onNext({ analysis });
+    };
+
     return (
         <div>
-            <StepHeader icon={<Beaker />} text="Analyze the Results" />
-            <p className="paragraph">Compare the results to your prediction. Was your hypothesis supported? Why or why not?</p>
+            <StepHeader icon={<TrendingUp />} text="Analyze the Results" />
+            <p className="paragraph">Compare the actual results to your prediction and hypothesis. Was your hypothesis supported by the evidence? Explain why or why not, and discuss any unexpected outcomes.</p>
             <textarea
                 value={analysis}
                 onChange={(e) => setAnalysis(e.target.value)}
                 className="textarea-field"
                 rows="5"
-                placeholder="My hypothesis was (supported/not supported) because the results showed..."
+                placeholder="My hypothesis was (supported/not supported) because the results showed... An unexpected observation was..."
             />
             <div className="button-group">
                 <Button onClick={onBack} className="button-secondary">
                     <ChevronLeft /> Previous
                 </Button>
-                <Button onClick={() => onNext({ analysis })} disabled={!analysis}>
+                <Button onClick={handleNextStep} disabled={!analysis}>
                     Next: Write Conclusion <ChevronRight />
                 </Button>
             </div>
@@ -403,24 +553,30 @@ const AnalysisStep = ({ onNext, onBack }) => {
     );
 };
 
-const ConclusionStep = ({ onNext, onBack }) => {
-    const [conclusion, setConclusion] = useState('');
+const ConclusionStep = ({ onNext, onBack, responses, setResponses }) => {
+    const [conclusion, setConclusion] = useState(responses?.conclusion || '');
+
+    const handleNextStep = () => {
+        setResponses(prev => ({ ...prev, conclusion }));
+        onNext({ conclusion });
+    };
+
     return (
         <div>
             <StepHeader icon={<CheckCircle />} text="Write Your Conclusion" />
-            <p className="paragraph">Summarize what you learned from this experiment. What are the key takeaways?</p>
+            <p className="paragraph">Summarize what you learned from this experiment. What are the key takeaways? How does this experiment relate to broader scientific principles or real-world applications?</p>
             <textarea
                 value={conclusion}
                 onChange={(e) => setConclusion(e.target.value)}
                 className="textarea-field"
                 rows="5"
-                placeholder="In conclusion, this experiment demonstrates that..."
+                placeholder="In conclusion, this experiment demonstrates that... This relates to [concept] by... I also learned that..."
             />
             <div className="button-group">
                 <Button onClick={onBack} className="button-secondary">
                     <ChevronLeft /> Previous
                 </Button>
-                <Button onClick={() => onNext({ conclusion })} disabled={!conclusion}>
+                <Button onClick={handleNextStep} disabled={!conclusion}>
                     Finish Experiment <ChevronRight />
                 </Button>
             </div>
@@ -431,6 +587,25 @@ const ConclusionStep = ({ onNext, onBack }) => {
 const Summary = ({ responses, experiment, onRestart, onNewGrade }) => {
     // Helper to format keys for display
     const formatKey = (key) => {
+        // Handle special keys for display from observation_prompts
+        if (key === 'initial_observation') return 'Initial Observation';
+        if (key === 'mid_observation') return 'Mid-Experiment Observation';
+        if (key === 'final_observation') return 'Final Observation';
+        if (key === 'reasoning_cause') return 'Reasoning for Change';
+        if (key === 'initial_comparison') return 'Initial Comparison';
+        if (key === 'toy_observation') return 'Plastic Toy Observation';
+        if (key === 'stone_observation') return 'Stone Observation';
+        if (key === 'prior_knowledge') return 'Prior Knowledge';
+        if (key === 'paperclip_observation') return 'Paperclip Observation';
+        if (key === 'wood_observation') return 'Wood Observation';
+        if (key === 'plastic_observation') return 'Plastic Coin Observation';
+        if (key === 'reasoning_conclusion') return 'Reasoning/Conclusion';
+        if (key === 'initial_appearance') return 'Initial Appearance';
+        if (key === 'immediate_reaction') return 'Immediate Reaction';
+        if (key === 'ongoing_reaction') return 'Ongoing Reaction';
+        if (key === 'reasoning_gas') return 'Reasoning for Gas';
+
+
         return key.replace(/([A-Z])/g, ' $1') // Add space before capital letters
                   .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
                   .replace(/_/g, ' '); // Replace underscores
@@ -482,7 +657,9 @@ const Summary = ({ responses, experiment, onRestart, onNewGrade }) => {
 const ExperimentView = ({ grade, experiment, onComplete, onGoToGradeSelection }) => {
     // Define total steps based on grade
     const getStepsForGrade = (g) => {
-        if (g >= 1 && g <= 4) return 3; // Scenario, DynamicQuestion, Result
+        // For G1-4, the "Observe/Predict" step covers all individual observation prompts.
+        // So, it's 3 main stages: Scenario, Observe/Predict (multi-prompt), Result.
+        if (g >= 1 && g <= 4) return 3;
         if (g >= 5 && g <= 6) return 5; // Scenario, Hypothesis, Variables, Prediction, Result
         if (g >= 7 && g <= 8) return 6; // Scenario, Hypothesis, Variables, Prediction, Analysis, Conclusion
         return 0;
@@ -493,27 +670,21 @@ const ExperimentView = ({ grade, experiment, onComplete, onGoToGradeSelection })
     const [responses, setResponses] = useState({}); // Collects responses from each step
 
     const handleNext = (data) => {
-        const newResponses = { ...responses, ...data };
-        setResponses(newResponses);
-
+        // The individual step components will now update `responses` directly via `setResponses` prop
+        // We only advance the step here, and `data` might be empty or just a trigger.
         if (currentStep < totalSteps) {
             setCurrentStep(currentStep + 1);
         } else {
-            onComplete(newResponses); // Experiment finished, pass all collected responses
+            onComplete(responses); // Experiment finished, pass all collected responses from state
         }
     };
 
     const handleBack = () => {
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1);
-            // When going back, reset the answer for the current step (to allow re-editing)
-            // This is a simplified approach; a more robust solution might manage answers for each step in a single state object.
-            // For now, we clear the answer for the step being navigated to.
-            // Note: If you want to *preserve* answers when navigating back,
-            // the individual step components (e.g., DynamicQuestionStep, ResultStep)
-            // would need to take their initial value from `responses` and update `responses` on change.
-            // The current setup clears the answer for the step you are going *back to*
-            // so you can re-enter it.
+            // When navigating back, we should ideally preserve the answers for the previous step.
+            // The individual step components are now responsible for populating their state
+            // from the `responses` prop if available.
         } else {
             onGoToGradeSelection(); // Back to grade selection if on first step
         }
@@ -531,20 +702,21 @@ const ExperimentView = ({ grade, experiment, onComplete, onGoToGradeSelection })
             case 1:
                 return <ScenarioStep experiment={experiment} onNext={handleNext} onBack={handleBack} />;
             case 2:
-                if (grade >= 1 && grade <= 4) return <DynamicQuestionStep experiment={experiment} onNext={handleNext} onBack={handleBack} />;
-                return <HypothesisStep onNext={handleNext} onBack={handleBack} />;
+                // Renamed and updated for G1-4 to handle multiple observation prompts
+                if (grade >= 1 && grade <= 4) return <ObservationAndPredictionStep experiment={experiment} onNext={handleNext} onBack={handleBack} responses={responses} setResponses={setResponses} />;
+                return <HypothesisStep onNext={handleNext} onBack={handleBack} responses={responses} setResponses={setResponses} />;
             case 3:
                 // Pass current `responses` to ResultStep so it can display previous answer
-                if (grade >= 1 && grade <= 4) return <ResultStep experiment={experiment} grade={grade} responses={responses} onNext={handleNext} onBack={handleBack} />;
-                return <VariablesStep onNext={handleNext} onBack={handleBack} grade={grade} />;
+                if (grade >= 1 && grade <= 4) return <ResultStep experiment={experiment} grade={grade} responses={responses} setResponses={setResponses} onNext={handleNext} onBack={handleBack} />;
+                return <VariablesStep onNext={handleNext} onBack={handleBack} grade={grade} responses={responses} setResponses={setResponses} />;
             case 4:
-                return <PredictionStep onNext={handleNext} onBack={handleBack} />;
+                return <PredictionStep onNext={handleNext} onBack={handleBack} responses={responses} setResponses={setResponses} />;
             case 5:
                 // Pass current `responses` to ResultStep
-                if (grade >= 5 && grade <= 6) return <ResultStep experiment={experiment} grade={grade} responses={responses} onNext={handleNext} onBack={handleBack} />;
-                return <AnalysisStep onNext={handleNext} onBack={handleBack} />;
+                if (grade >= 5 && grade <= 6) return <ResultStep experiment={experiment} grade={grade} responses={responses} setResponses={setResponses} onNext={handleNext} onBack={handleBack} />;
+                return <AnalysisStep onNext={handleNext} onBack={handleBack} responses={responses} setResponses={setResponses} />;
             case 6:
-                return <ConclusionStep onNext={handleNext} onBack={handleBack} />;
+                return <ConclusionStep onNext={handleNext} onBack={handleBack} responses={responses} setResponses={setResponses} />;
             default:
                 return <p>Starting experiment...</p>;
         }
